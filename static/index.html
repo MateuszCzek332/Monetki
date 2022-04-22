@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script href="js/index.js"></script>
+</head>
+<body>
+
+    <div id="all">
+
+    </div>
+
+    <h2>Dodawanie rekordu</h2>
+    <select id="kraj" name="kraj">
+        <option value="pol">Polska</option>
+        <option value="eng">Anglia</option>
+        <option value="nig">Nigger</option>
+    </select>
+    <input id="nom" name="nom" type="text">
+    <input id="nr" name="nr" type="number">
+    <select id="stop" name="stop">
+        <option value="al">Aluminium</option>
+        <option value="br">Brąz</option>
+        <option value="sv">Silver</option>
+    </select>
+    <input id="rok" name="rok" type="number">
+    <input id="send" type="button" value="send">
+
+    <script>
+        document.getElementById("send").onclick = async () => {
+            fetchPostAsync = async () => {
+
+                const data = JSON.stringify({
+                    kraj: document.getElementById("kraj").value,
+                    nom: document.getElementById("nom").value,
+                    nr: document.getElementById("nr").value,
+                    stop: document.getElementById("stop").value
+                })
+
+                const options = {
+                        method: "POST",
+                        body: data,
+                };
+
+                let response = await fetch("/add", options)
+
+                if (!response.ok)
+                    return response.status
+                else
+                    return await response.json() // response.json
+
+            }
+
+            let w = await fetchPostAsync()
+            console.log(w)
+        }
+    </script>
+
+</body>
+</html>
