@@ -2,16 +2,40 @@ const http = require("http");
 const fs = require("fs");
 const Datastore = require('nedb')
 
-const coll1 = new Datastore({
-    filename: 'kolekcja.db',
+const allData = new Datastore({
+    filename: 'dane.db',
     autoload: true
 });
+const flagi = new Datastore({
+    filename: 'flagi.db',
+    autoload: true
+});
+const stopy = new Datastore({
+    filename: 'stopy.db',
+    autoload: true
+});
+
 
 const PORT = 3000;
 const server = http.createServer((req, response) => {
 
-    switch (req.method) {
-            case "GET":
+    switch (true) {
+            case  req.method == "GET":
+                if (req.url === "/style.css") {
+                    fs.readFile("static/style.css", function (error, data) {
+                        response.writeHead(200, { 'Content-Type': 'text/plain' });
+                        response.write(data);
+                        response.end();
+                    })
+                }
+                else if(req.url === "/script.js") {
+                    fs.readFile("static/script.js", function (error, data) {
+                        response.writeHead(200, { 'Content-Type': 'application/javascript' });
+                        response.write(data);
+                        response.end();
+                    })
+                }
+                else{
                 fs.readFile("static/index.html", function (error, data) {       
                     if (error) {
                         response.writeHead(404, { 'Content-Type': 'text/html' });
@@ -24,15 +48,16 @@ const server = http.createServer((req, response) => {
                         response.end();
                     }
                 });
-                break;
-            case "POST":
-                serverResponse(req, response)
+            }
+            break;
+            case req.method == "POST" && req.url == "/add":
+                add(req, response)
                 break;
     }
 
 })
 
-function serverResponse(req, res){
+function add(req, res){
 
     let body = "";
     
@@ -48,15 +73,17 @@ function serverResponse(req, res){
         const doc = {
             kraj: body.kraj,
             nom: body.nom,
+            nr: body.nr,
+            stop: body.stop,
+            rok: body.rok,
         };
 
-        coll1.insert(doc, function (err, newDoc) {
+        allData.insert(doc, function (err, newDoc) {
             console.log(newDoc)
-            console.log("losowe id dokumentu: "+newDoc._id)
+        
+            res.writeHead(200, { "Content-type": "text/plain;charset=utf-8" });
+            res.end(JSON.stringify(newDoc, null, 5));
         });
-
-        res.writeHead(200, { "Content-type": "text/plain;charset=utf-8" });
-        res.end(JSON.stringify(body, null, 5));
      
      })
 }

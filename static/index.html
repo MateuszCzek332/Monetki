@@ -5,14 +5,26 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script href="js/index.js"></script>
+    <style>
+        td{
+            border: 1px solid black;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
 
-    <div id="all">
-
-    </div>
+    <table id="all">
+        <tr>
+            <td>Kraj</td>
+            <td>Nominał</td>
+            <td>Nr. katalogowy</td>
+            <td>Stop</td>
+            <td>Rok</td>
+            <td>Usuń</td>
+            <td>Update</td>
+        </tr>
+    </table>
 
     <h2>Dodawanie rekordu</h2>
     <select id="kraj" name="kraj">
@@ -38,7 +50,8 @@
                     kraj: document.getElementById("kraj").value,
                     nom: document.getElementById("nom").value,
                     nr: document.getElementById("nr").value,
-                    stop: document.getElementById("stop").value
+                    stop: document.getElementById("stop").value,
+                    rok: document.getElementById("rok").value
                 })
 
                 const options = {
@@ -56,7 +69,30 @@
             }
 
             let w = await fetchPostAsync()
-            console.log(w)
+            addRecord(w)
+        }
+
+        addRecord = (w) =>{
+         let tr = document.createElement("tr")
+            let kraj = document.createElement("td")   
+            let nom = document.createElement("td")   
+            let nr = document.createElement("td")   
+            let stop = document.createElement("td")   
+            let rok = document.createElement("td")   
+
+            kraj.innerText = w.kraj
+            nom.innerText = w.nom
+            nr.innerText = w.nr
+            stop.innerText = w.stop
+            rok.innerText = w.rok
+
+            tr.appendChild(kraj)
+            tr.appendChild(nom)
+            tr.appendChild(nr)
+            tr.appendChild(stop)
+            tr.appendChild(rok)
+
+            document.getElementById("all").appendChild(tr)
         }
     </script>
 
