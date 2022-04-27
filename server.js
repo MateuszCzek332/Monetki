@@ -53,6 +53,12 @@ const server = http.createServer((req, response) => {
             case req.method == "POST" && req.url == "/add":
                 add(req, response)
                 break;
+            case req.method == "POST" && req.url == "/del":
+                del(req, response)
+                break;
+            case req.method == "POST" && req.url == "/all":
+                getAll(req, response)
+                break;
     }
 
 })
@@ -85,6 +91,55 @@ function add(req, res){
             res.end(JSON.stringify(newDoc, null, 5));
         });
      
+     })
+}
+
+function getAll(req, res){
+
+    let body = {
+        docs: null,
+        flags:null,
+        stops:null
+    }
+
+    allData.find({ }, function (err, docs) {
+        console.log(docs)
+        body.docs = docs
+
+        flagi.find({ }, function (err, docs2) {
+            console.log(docs2)
+            body.flags = docs2
+            
+            stopy.find({ }, function (err, docs3) {
+                console.log(docs3)
+                body.stops = docs3
+                
+                res.writeHead(200, { "Content-type": "text/plain;charset=utf-8" });
+                res.end(JSON.stringify(body, null, 5));
+            });
+        });
+    });
+
+}
+
+function del(req, res){
+
+    let body = "";
+    
+    req.on("data", function (data) {
+        console.log("data: " + data)
+        body += data.toString();
+     })
+
+    req.on("end", function (data) {
+        console.log(body)
+
+        allData.remove({ _id: body }, {}, function (err, numRemoved) {
+            console.log("usunięto dokumentów: ",numRemoved)
+        });
+
+        res.writeHead(200, { "Content-type": "text/plain;charset=utf-8" });
+        res.end("usuniete");
      })
 }
 

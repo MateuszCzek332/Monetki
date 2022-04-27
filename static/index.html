@@ -14,6 +14,8 @@
 </head>
 <body>
 
+    <h2>Monetki</h2>
+
     <table id="all">
         <tr>
             <td>Kraj</td>
@@ -28,48 +30,95 @@
 
     <h2>Dodawanie rekordu</h2>
     <select id="kraj" name="kraj">
-        <option value="pol">Polska</option>
-        <option value="eng">Anglia</option>
-        <option value="nig">Nigger</option>
     </select>
     <input id="nom" name="nom" type="text">
     <input id="nr" name="nr" type="number">
     <select id="stop" name="stop">
-        <option value="al">Aluminium</option>
-        <option value="br">Brąz</option>
-        <option value="sv">Silver</option>
     </select>
     <input id="rok" name="rok" type="number">
     <input id="send" type="button" value="send">
 
     <script>
-        document.getElementById("send").onclick = async () => {
-            fetchPostAsync = async () => {
+        fetchPostAsync = async () => {
 
-                const data = JSON.stringify({
-                    kraj: document.getElementById("kraj").value,
-                    nom: document.getElementById("nom").value,
-                    nr: document.getElementById("nr").value,
-                    stop: document.getElementById("stop").value,
-                    rok: document.getElementById("rok").value
-                })
+            const data = JSON.stringify({
+                kraj: document.getElementById("kraj").value,
+                nom: document.getElementById("nom").value,
+                nr: document.getElementById("nr").value,
+                stop: document.getElementById("stop").value,
+                rok: document.getElementById("rok").value
+            })
 
-                const options = {
-                        method: "POST",
-                        body: data,
-                };
+            const options = {
+                    method: "POST",
+                    body: data,
+            };
 
-                let response = await fetch("/add", options)
+            let response = await fetch("/add", options)
 
-                if (!response.ok)
-                    return response.status
-                else
-                    return await response.json() // response.json
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
 
+        }
+
+        delFetchPostAsync = async (uuid) => {
+
+            const options = {
+                    method: "POST",
+                    body: uuid,
+            };
+
+            let response = await fetch("/del", options)
+
+            if (!response.ok)
+                return response.status
+            else
+                return await response.text() // response.json
+
+        }
+
+        allFetchPostAsync = async () => {
+            const options = {
+                    method: "POST",
+                    body: "",
+            };
+
+            let response = await fetch("/all", options)
+
+            if (!response.ok)
+                return response.status
+            else
+                return await response.json() // response.json
+
+        }
+
+        generateTable = (tab) => {
+
+            for(i=0; i<tab.length; i++){
+                addRecord(tab[i])
+            }
+        }
+
+        generateSelects = (flagi, stopy) => {
+
+            let kraj = document.getElementById("kraj")
+            let stops = document.getElementById("stop")
+
+            for(i=0; i<flagi.length; i++){
+                let option = document.createElement("option")
+                option.innerText = flagi[i].kraj
+                option.value = flagi[i].kraj
+                kraj.appendChild(option)
             }
 
-            let w = await fetchPostAsync()
-            addRecord(w)
+            for(i=0; i<stopy.length; i++){
+                let option = document.createElement("option")
+                option.innerText = stopy[i].name
+                option.value = stopy[i].name
+                stops.appendChild(option)
+            }
         }
 
         addRecord = (w) =>{
@@ -79,6 +128,16 @@
             let nr = document.createElement("td")   
             let stop = document.createElement("td")   
             let rok = document.createElement("td")   
+            let del = document.createElement("td")   
+
+            let delBtn = document.createElement("button")  
+            delBtn.innerText = "usuń"
+            del.onclick = async () => {
+                let k = await delFetchPostAsync(w._id);
+                tr.remove();
+            }
+            del.appendChild(delBtn) 
+            let updateBtn = document.createElement("button")   
 
             kraj.innerText = w.kraj
             nom.innerText = w.nom
@@ -91,9 +150,23 @@
             tr.appendChild(nr)
             tr.appendChild(stop)
             tr.appendChild(rok)
+            tr.appendChild(del)
 
             document.getElementById("all").appendChild(tr)
         }
+
+        document.getElementById("send").onclick = async () => {
+            let w = await fetchPostAsync()
+            addRecord(w)
+        }
+
+        window.onload = async () => {
+            let w = await allFetchPostAsync()
+            generateTable(w.docs)
+            generateSelects(w.flags, w.stops)
+            console.log(w)
+        }
+
     </script>
 
 </body>
