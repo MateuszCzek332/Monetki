@@ -152,7 +152,7 @@
             selected.wiersz.children[4].innerText = selected.dane.rok
             let delBtn = document.createElement("button")
             delBtn.innerText = "usuń"
-            delBtn.onclick = async () => {
+            delBtn.onclick = async () => {  
                 let k = await delFetchPostAsync(selected.dane._id);
                 delBtn.parentElement.parentElement.remove();
             }
