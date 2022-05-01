@@ -59,6 +59,9 @@ const server = http.createServer((req, response) => {
             case req.method == "POST" && req.url == "/all":
                 getAll(req, response)
                 break;
+            case req.method == "POST" && req.url == "/update":
+                update(req, response)
+                break;
     }
 
 })
@@ -140,6 +143,28 @@ function del(req, res){
 
         res.writeHead(200, { "Content-type": "text/plain;charset=utf-8" });
         res.end("usuniete");
+     })
+}
+
+function update(req, res){
+
+    let body = "";
+    
+    req.on("data", function (data) {
+        //console.log("data: " + data)
+        body += data.toString();
+     })
+
+    req.on("end", function (data) {
+        body = JSON.parse(body)
+        console.log(body)
+
+        allData.update({ _id: body._id }, { $set: body }, {}, function (err, numUpdated) {
+            console.log("zaktualizowano " + numUpdated)
+         });
+
+        res.writeHead(200, { "Content-type": "text/plain;charset=utf-8" });
+        res.end("update");
      })
 }
 

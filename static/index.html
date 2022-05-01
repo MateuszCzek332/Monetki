@@ -10,6 +10,9 @@
             border: 1px solid black;
             padding: 10px;
         }
+        select{
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
@@ -23,8 +26,7 @@
             <td>Nr. katalogowy</td>
             <td>Stop</td>
             <td>Rok</td>
-            <td>Usuń</td>
-            <td>Update</td>
+            <td>Usuń/Update</td>
         </tr>
     </table>
 
@@ -39,6 +41,11 @@
     <input id="send" type="button" value="send">
 
     <script>
+
+        let allFlags;
+        let allStops;
+        let selected = null;
+
         fetchPostAsync = async () => {
 
             const data = JSON.stringify({
@@ -79,6 +86,22 @@
 
         }
 
+        updateFetchPostAsync = async () => {
+
+        const options = {
+                method: "POST",
+                body: JSON.stringify(selected.dane),
+        };
+
+        let response = await fetch("/update", options)
+
+        if (!response.ok)
+            return response.status
+        else
+            return await response.text() // response.json
+
+        }
+
         allFetchPostAsync = async () => {
             const options = {
                     method: "POST",
@@ -101,24 +124,107 @@
             }
         }
 
-        generateSelects = (flagi, stopy) => {
+        generateSelects = () => {
 
             let kraj = document.getElementById("kraj")
             let stops = document.getElementById("stop")
 
-            for(i=0; i<flagi.length; i++){
+            for(i=0; i<allFlags.length; i++){
                 let option = document.createElement("option")
-                option.innerText = flagi[i].kraj
-                option.value = flagi[i].kraj
+                option.innerText = allFlags[i].kraj
+                option.value = allFlags[i].kraj
                 kraj.appendChild(option)
             }
 
-            for(i=0; i<stopy.length; i++){
+            for(i=0; i<allStops.length; i++){
                 let option = document.createElement("option")
-                option.innerText = stopy[i].name
-                option.value = stopy[i].name
+                option.innerText = allStops[i].name
+                option.value = allStops[i].name
                 stops.appendChild(option)
             }
+        }
+
+        unselect = () => {
+            selected.wiersz.children[0].innerText = selected.dane.kraj
+            selected.wiersz.children[1].innerText = selected.dane.nom
+            selected.wiersz.children[2].innerText = selected.dane.nr
+            selected.wiersz.children[3].innerText = selected.dane.stop
+            selected.wiersz.children[4].innerText = selected.dane.rok
+            let delBtn = document.createElement("button")
+            delBtn.innerText = "usuń"
+            delBtn.onclick = async () => {
+                let k = await delFetchPostAsync(selected.dane._id);
+                delBtn.parentElement.parentElement.remove();
+            }
+            selected.wiersz.children[5].innerText = ""
+            selected.wiersz.children[5].appendChild(delBtn)
+            selected = null;
+        }
+
+        selectToUpdate = (w, obj) => {
+
+            if(selected != null)
+                unselect()
+
+            selected = {
+                wiersz: w,
+                dane: obj
+            }
+            console.log(selected);
+            w.children[5].innerText = ""
+            //kraj
+            let krajSelect = document.createElement("select")
+            for(i=0; i<allFlags.length; i++){
+                let option = document.createElement("option")
+                option.innerText = allFlags[i].kraj
+                option.value = allFlags[i].kraj
+                if(allFlags[i].kraj == obj.kraj)
+                    option.selected = "selected"
+                krajSelect.appendChild(option)
+            }
+            w.children[0].innerText = ""
+            w.children[0].appendChild(krajSelect)
+            //stop
+            let stopSelect = document.createElement("select")
+            for(i=0; i<allStops.length; i++){
+                let option = document.createElement("option")
+                option.innerText = allStops[i].name
+                option.value = allStops[i].name
+                if(allStops[i].name == obj.stop)
+                    option.selected = "selected"
+                stopSelect.appendChild(option)
+            }
+            w.children[3].innerText = ""
+            w.children[3].appendChild(stopSelect)
+            //Przycisk
+            let upBtn = document.createElement("button")
+            upBtn.innerText = "update"
+            upBtn.onclick = () => {
+                selected.dane.kraj = w.children[0].children[0].value
+                selected.dane.nom = w.children[1].children[0].value
+                selected.dane.nr = w.children[2].children[0].value
+                selected.dane.stop = w.children[3].children[0].value
+                selected.dane.rok = w.children[4].children[0].value
+                updateFetchPostAsync()
+                unselect()
+            }
+            w.children[5].appendChild(upBtn)
+            //inne inputy
+            w.children[1].innerText = w.children[2].innerText = w.children[4].innerText = ""
+            let nomInput = document.createElement("input")
+            let nrInput = document.createElement("input")
+            let rokInput = document.createElement("input")
+            nomInput.type = "text"
+            nomInput.value = obj.nom
+            nrInput.type = "number"
+            nrInput.value = obj.nr
+            rokInput.type = "number"
+            rokInput.value = obj.rok
+            
+            w.children[1].appendChild(nomInput)
+            w.children[2].appendChild(nrInput)
+            w.children[4].appendChild(rokInput)
+
         }
 
         addRecord = (w) =>{
@@ -128,17 +234,20 @@
             let nr = document.createElement("td")   
             let stop = document.createElement("td")   
             let rok = document.createElement("td")   
-            let del = document.createElement("td")   
+            let del = document.createElement("td")
+
+            kraj.onclick = function(){
+                selectToUpdate(tr, w)
+            }
 
             let delBtn = document.createElement("button")  
             delBtn.innerText = "usuń"
-            del.onclick = async () => {
+            delBtn.onclick = async () => {
                 let k = await delFetchPostAsync(w._id);
                 tr.remove();
             }
             del.appendChild(delBtn) 
-            let updateBtn = document.createElement("button")   
-
+            
             kraj.innerText = w.kraj
             nom.innerText = w.nom
             nr.innerText = w.nr
@@ -162,8 +271,10 @@
 
         window.onload = async () => {
             let w = await allFetchPostAsync()
+            allFlags = w.flags
+            allStops = w.stops
+            generateSelects()
             generateTable(w.docs)
-            generateSelects(w.flags, w.stops)
             console.log(w)
         }
 
