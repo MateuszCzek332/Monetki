@@ -1,6 +1,9 @@
 const http = require("http");
 const fs = require("fs");
 const Datastore = require('nedb')
+const express = require("express")
+const app = express()
+const PORT = process.env.PORT || 3000; // bardzo istotna linijka - port zostaje przydzielony przez Heroku
 
 const allData = new Datastore({
     filename: 'dane.db',
@@ -15,8 +18,6 @@ const stopy = new Datastore({
     autoload: true
 });
 
-
-const PORT = 3000;
 const server = http.createServer((req, response) => {
 
     switch (true) {
